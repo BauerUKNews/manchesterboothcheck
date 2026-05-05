@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>News Booth Early Warning System</title>
+<title>Newsroom Resource Planner</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -151,6 +151,55 @@
   .tt-empty { font-size: 0.7rem; color: rgba(255,255,255,0.4); font-style: italic; }
 
   footer { padding: 1.1rem 2rem; border-top: 1px solid var(--border); font-size: 0.6rem; font-family: var(--mono); color: var(--text3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; background: var(--surface); margin-top: 0.5rem; }
+
+  /* TABS */
+  .tab-bar { display: flex; gap: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; }
+  .tab-btn { font-family: var(--mono); font-size: 0.72rem; padding: 0.7rem 1.25rem; border: none; background: transparent; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.12s; letter-spacing: 0.04em; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* DESK TAB */
+  .desk-section { padding: 1.5rem 2rem 2rem; }
+  .desk-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--border); }
+  .desk-legend { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.65rem; font-family: var(--mono); color: var(--text2); }
+  .desk-legend-label { color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.6rem; }
+  .dswatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* DESK CALENDAR — same 7-col structure but single row per week, no shifts */
+  .desk-cal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; width: 100%; margin-bottom: 2rem; }
+  .desk-hdr { display: grid; grid-template-columns: 140px repeat(7,1fr); background: var(--surface3); border-bottom: 1px solid var(--border); }
+  .desk-hc { padding: 0.4rem 0.5rem; font-size: 0.58rem; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); text-align: center; border-right: 1px solid var(--border2); }
+  .desk-hc:first-child { text-align: left; padding-left: 0.85rem; }
+  .desk-hc:last-child { border-right: none; }
+  .desk-hc.we { background: var(--we-bg); }
+
+  .desk-week { display: grid; grid-template-columns: 140px repeat(7,1fr); border-bottom: 1px solid var(--border); }
+  .desk-week:last-child { border-bottom: none; }
+  .desk-lbl { background: var(--surface2); border-right: 1px solid var(--border); display: flex; align-items: center; padding: 0.5rem 0.85rem; }
+  .desk-lbl span { font-size: 0.67rem; font-weight: 500; font-family: var(--mono); color: var(--text); }
+
+  .desk-cell { padding: 0.4rem 0.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem; border-right: 1px solid var(--border2); cursor: pointer; transition: filter 0.1s; }
+  .desk-cell:last-child { border-right: none; }
+  .desk-cell:hover { filter: brightness(0.93); }
+  .desk-cell .dc-count { font-size: 1rem; font-weight: 500; font-family: var(--mono); line-height: 1; }
+  .desk-cell .dc-date { font-size: 0.48rem; font-family: var(--mono); opacity: 0.5; margin-top: 0.1rem; }
+  .desk-cell .dc-we { font-size: 0.42rem; font-family: var(--mono); opacity: 0.45; margin-top: 0.05rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .desk-cell.we-cell { background: #f4f2ee; }
+  .desk-cell.we-cell .dc-count { color: var(--text2); }
+  .desk-cell.we-empty { background: #ece9e4; cursor: default; }
+  .desk-cell.we-empty:hover { filter: none; }
+  .desk-cell.bh-cell { background: #f0ede8; }
+  .desk-cell.incomplete-cell { background: #e8e5e0; cursor: default; }
+  .desk-cell.incomplete-cell:hover { filter: none; }
+
+  /* Desk count colour bands */
+  .dl0 .dc-count { color: var(--text3); }
+  .dl1 .dc-count { color: #2e7d5e; }
+  .dl2 .dc-count { color: #1f6048; }
+  .dl3 .dc-count { color: var(--amber); }
+  .dl4 .dc-count { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -159,7 +208,7 @@
 
 <header>
   <div>
-    <h1>News Booth Early Warning System</h1>
+    <h1>Newsroom Resource Planner</h1>
     <div class="header-sub" id="hsub">Upload a rota to begin</div>
   </div>
   <button class="change-btn" id="reload-btn" style="display:none" onclick="resetToUpload()">&#8617; Load different rota</button>
@@ -183,6 +232,14 @@
   <div class="top-bar">
     <div><h2 id="rota-title">Rota</h2><p id="rota-meta"></p></div>
   </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('booths',this)">News Booths</button>
+    <button class="tab-btn" onclick="switchTab('desks',this)">Desk Space</button>
+  </div>
+
+  <!-- BOOTHS TAB -->
+  <div class="tab-pane active" id="tab-booths">
   <div class="summary-strip" id="summary-strip"></div>
   <div id="warnings-bar">
     <button id="warnings-toggle" onclick="toggleWarnings()"></button>
@@ -209,6 +266,26 @@
     </div>
     <div id="months-container"></div>
   </div>
+  </div><!-- /tab-booths -->
+
+  <!-- DESKS TAB -->
+  <div class="tab-pane" id="tab-desks">
+    <div class="desk-section">
+      <div class="desk-controls">
+        <div class="desk-legend">
+          <span class="desk-legend-label">People in office:</span>
+          <span><span class="dswatch" style="background:#faf9f7;border:1px solid #ddd9d3"></span> 0</span>
+          <span><span class="dswatch" style="background:#eef7f2"></span> 1–12</span>
+          <span><span class="dswatch" style="background:#e4f0e8"></span> 13–17</span>
+          <span style="display:flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 11 11"><circle cx="5.5" cy="5.5" r="4.7" fill="none" stroke="#c8950a" stroke-width="0.8"/><polyline points="2,5.5 4.3,7.8 9,3" fill="none" stroke="#c8950a" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round"/></svg> 18 (full)</span>
+          <span style="display:flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 11 11" style="animation:danger-flash 0.85s ease-in-out infinite"><path d="M5.5 0.5L10.8 10.5H0.2Z" fill="none" stroke="#c84b2f" stroke-width="0.9" stroke-linejoin="round"/><line x1="5.5" y1="4" x2="5.5" y2="7.2" stroke="#c84b2f" stroke-width="1" stroke-linecap="round"/><circle cx="5.5" cy="9" r="0.6" fill="#c84b2f"/></svg> 19+ (over)</span>
+          <span style="margin-left:4px;color:var(--text3)">· Mon–Wed +1 Work Experience</span>
+        </div>
+      </div>
+      <div id="desk-months"></div>
+    </div>
+  </div><!-- /tab-desks -->
+
 </div>
 
 <footer>
@@ -219,15 +296,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const BOOTH_PEOPLE=['owen arands','nathan marsh','alex corns','cameron green','shaunna burns','oliver morgan',"grace o'hare",'kat wright','vicky haines','lucy salem','jonny freeman'];
+const DESK_PEOPLE=['owen arands','nathan marsh','harry booth','stan tomkinson','jonny freeman','alex corns','kat wright','oliver morgan',"grace o'hare",'cameron green','shaunna burns','vicky haines','tom preece','jess mcgillvray','charlotte barber','anna davies','chris patel','adam clark','leo christian','sam rhodes'];
 const SECTIONS=['focus one','focus two','nationals & london','nationals','hub south & east','hub south & west','hub north','hub'];
 const DAYS=['Mon','Tue','Wed','Thu','Fri'];
+const ALL_WEEK=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const WE_NAT=['abssport b60 b120 london','bauer 120 pm'];
 const WE_FOC=['liverpool manchester','w midlands e midlands'];
 const WE_HUB=['hub north','hub south & east','hub south & west'];
+const WORK_EX_DAYS=['Mon','Tue','Wed']; // Mon-Wed always add 1 work experience person
 
 function norm(s){return String(s||'').trim().toLowerCase().replace(/\u00a0/g,'').replace(/\u202f/g,'').replace(/\s+/g,' ').trim();}
 function isBooth(n){return BOOTH_PEOPLE.some(p=>p===norm(n));}
+function isDesk(n){return DESK_PEOPLE.some(p=>p===norm(n));}
 function cap(s){return s.replace(/\b\w/g,c=>c.toUpperCase());}
 function secLabel(s){return{'focus one':'Focus One','focus two':'Focus Two','nationals & london':'Nationals & London','nationals':'Nationals','hub south & east':'Hub S&E','hub south & west':'Hub S&W','hub north':'Hub North','hub':'Hub'}[norm(s)]||s;}
 function status(n){return n===0?0:n<=2?1:n===3?2:n===4?3:n===5?4:5;}
@@ -241,6 +322,43 @@ function icon(count,sz){
   if(count===4) return `<svg width="${s}" height="${s}" viewBox="${v}">${t('#c8950a')}</svg>`;
   if(count===5) return `<svg width="${s}" height="${s}" viewBox="${v}">${t('#c8680a')}</svg>`;
   return `<svg width="${s}" height="${s}" viewBox="${v}" class="flash-icon">${t('#c84b2f')}</svg>`;
+}
+
+// Parse desk occupancy from a weekday sheet — scan every cell, no section filtering
+function parseDeskWeekday(rows){
+  const result={Mon:new Set(),Tue:new Set(),Wed:new Set(),Thu:new Set(),Fri:new Set()};
+  for(const row of rows){
+    const a=[...row.map(x=>String(x||'').trim()),...Array(7).fill('')].slice(0,7);
+    const[c0,c1,c2,c3,c4,c5,c6]=a;
+    [c2,c3,c4,c5,c6].forEach((name,i)=>{
+      if(name&&isDesk(name)) result[DAYS[i]].add(cap(name));
+    });
+  }
+  // Convert sets to sorted arrays, add Work Ex for Mon-Wed
+  const out={};
+  DAYS.forEach(day=>{
+    const people=Array.from(result[day]).sort();
+    if(WORK_EX_DAYS.includes(day)) people.unshift('Work Experience');
+    out[day]={people,count:people.length};
+  });
+  return out;
+}
+
+// Parse desk occupancy from a weekend sheet
+function parseDeskWeekend(rows){
+  const dayHeaders=[];
+  for(let j=1;j<5;j++){const v=rows[0]&&rows[0][j]?String(rows[0][j]).trim():'';if(v)dayHeaders.push(v);}
+  const result={};
+  dayHeaders.forEach(dh=>{result[dh]=new Set();});
+  for(const row of rows.slice(1)){
+    dayHeaders.forEach((dh,j)=>{
+      const name=String(row[j+1]||'').trim();
+      if(name&&isDesk(name)) result[dh].add(cap(name));
+    });
+  }
+  const out={days:dayHeaders,data:{}};
+  dayHeaders.forEach(dh=>{out.data[dh]=Array.from(result[dh]).sort();});
+  return out;
 }
 
 const STOP_SECTIONS=['newsgathering & senior editors','head of news and sport',
@@ -306,7 +424,7 @@ function buildMergedWeeks(sheetParsed){
   while(i<sheetParsed.length){
     const s=sheetParsed[i];
     if(s.type==='weekend'){i++;continue;}
-    const row={label:s.label,wd:s.data,we:null,weLabel:null,weDays:[],bhMon:null};
+    const row={label:s.label,wd:s.data,desk:s.desk||null,we:null,weLabel:null,weDays:[],bhMon:null,deskWe:null};
     if(i+1<sheetParsed.length&&sheetParsed[i+1].type==='weekend'){
       const we=sheetParsed[i+1];
       // Split: Sat/Sun → this week; BH Mon → next weekday week
@@ -317,6 +435,8 @@ function buildMergedWeeks(sheetParsed){
         const satSunData={};
         satSunDays.forEach(d=>{satSunData[d]=we.data[d]||[];});
         row.we=satSunData;row.weLabel=we.label;row.weDays=satSunDays;
+        // Also carry desk weekend data
+        if(we.desk) row.deskWe={label:we.label,days:satSunDays,data:we.desk.data||{}};
       }
       // Attach BH Mon to the NEXT weekday week (store it temporarily)
       if(bhDays.length){
@@ -673,6 +793,166 @@ function setFilter(f,btn){
   renderGrid();
 }
 
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// Desk colour band: 0=empty, 1=low(1-8), 2=med(9-13), 3=high(14-17), 4=very high(18+)
+// Desk levels: 0=empty, 1=low(1-12), 2=comfortable(13-17), 3=at-capacity(18), 4=over(19+)
+function deskLevel(n){return n===0?0:n<=12?1:n<=17?2:n===18?3:4;}
+const DESK_BG=['#faf9f7','#eef7f2','#e4f0e8','#fef9ec','#fff0ee'];
+const DESK_TXT=['#a09b96','#2e7d5e','#1f6048','#b5720c','#c84b2f'];
+
+function deskIcon(count,sz){
+  const s=sz||22,h=s/2,v=`0 0 ${s} ${s}`;
+  if(count<18){
+    // Plain number — no icon
+    return null;
+  }
+  if(count===18){
+    // Amber tick in circle
+    return `<svg width="${s}" height="${s}" viewBox="${v}"><circle cx="${h}" cy="${h}" r="${s*.43}" fill="none" stroke="#c8950a" stroke-width="${s*.07}"/><polyline points="${s*.22},${h} ${s*.44},${s*.72} ${s*.8},${s*.3}" fill="none" stroke="#c8950a" stroke-width="${s*.1}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  // 19+ — flashing red exclamation triangle
+  return `<svg width="${s}" height="${s}" viewBox="${v}" class="flash-icon"><path d="M${h} ${s*.05}L${s*.96} ${s*.94}H${s*.04}Z" fill="none" stroke="#c84b2f" stroke-width="${s*.08}" stroke-linejoin="round"/><line x1="${h}" y1="${s*.34}" x2="${h}" y2="${s*.62}" stroke="#c84b2f" stroke-width="${s*.09}" stroke-linecap="round"/><circle cx="${h}" cy="${s*.75}" r="${s*.065}" fill="#c84b2f"/></svg>`;
+}
+
+function renderDeskGrid(){
+  const container=document.getElementById('desk-months');
+  container.innerHTML='';
+  const tpl='140px repeat(7,1fr)';
+
+  groupByMonth(allMerged).forEach(({month,weeks})=>{
+    const block=document.createElement('div');
+    block.className='month-block';
+    const h=document.createElement('div');
+    h.className='month-heading';
+    h.innerHTML=`${month} <span class="wc">${weeks.length} week${weeks.length!==1?'s':''}</span>`;
+    block.appendChild(h);
+
+    const cal=document.createElement('div');
+    cal.className='desk-cal';
+
+    // Header
+    const hdr=document.createElement('div');
+    hdr.className='desk-hdr';
+    hdr.style.gridTemplateColumns=tpl;
+    hdr.innerHTML=`<div class="desk-hc">Week</div>`+
+      ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d,i)=>
+        `<div class="desk-hc${i>=5?' we':''}">${d}</div>`).join('');
+    cal.appendChild(hdr);
+
+    weeks.forEach(w=>{
+      const wkDates5=getWeekDates(w.label);
+      const MONTH_LEN=Object.entries(MONTH_DAYS).reduce((best,[name,days])=>{
+        const p=w.label.toLowerCase().indexOf(name.slice(0,3));
+        return(p!==-1&&(best.pos===-1||p<best.pos))?{pos:p,days}:best;
+      },{pos:-1,days:31}).days;
+      function nd(d){return d>=MONTH_LEN?1:d+1;}
+      const satDate=wkDates5[4]!==null?nd(wkDates5[4]):null;
+      const sunDate=satDate!==null?nd(satDate):null;
+      const allDates=[...wkDates5,satDate,sunDate];
+
+      // Get BH Mon desk data
+      const bhMon=getBhMon(w);
+      const bhMonDesk=w.bhMon&&w.bhMon.days&&w.bhMon.days.length?(()=>{
+        const dh=w.bhMon.days[0];
+        const people=(w.bhMon.data&&w.bhMon.data[dh])?w.bhMon.data[dh].filter(n=>isDesk(n)).map(n=>cap(n)):[];
+        // Sort and deduplicate
+        return Array.from(new Set(people)).sort();
+      })():null;
+
+      const row=document.createElement('div');
+      row.className='desk-week';
+      row.style.gridTemplateColumns=tpl;
+
+      const lbl=document.createElement('div');
+      lbl.className='desk-lbl';
+      lbl.innerHTML=`<span>${w.label}</span>`;
+      row.appendChild(lbl);
+
+      ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach((day,di)=>{
+        const isWe=di>=5;
+        const dateN=allDates[di]!==null?String(allDates[di]):'';
+        const cell=document.createElement('div');
+
+        let people=[],isBH=false,isIncomplete=false,isWeEmpty=false;
+
+        if(isWe){
+          // Sat/Sun from weekend sheet
+          if(!w.deskWe){
+            isIncomplete=true;
+          } else {
+            const nw=normWeekend(w);
+            const weDay=day==='Sat'?nw.sat:nw.sun;
+            if(!weDay){
+              isWeEmpty=true;
+            } else {
+              // Parse desk people from weekend sheet
+              const dh=weDay.label;
+              const rawPeople=(w.deskWe.data&&w.deskWe.data[dh])||[];
+              people=Array.from(new Set(rawPeople.map(n=>cap(n)))).sort();
+            }
+          }
+        } else if(day==='Mon'&&bhMonDesk!==null){
+          // BH Monday — use the forwarded BH desk data
+          isBH=true;
+          people=bhMonDesk;
+        } else {
+          // Normal weekday
+          if(w.desk&&w.desk[day]){
+            people=w.desk[day].people||[];
+          }
+        }
+
+        const count=isIncomplete||isWeEmpty?0:people.length;
+        const lvl=deskLevel(count);
+        const bg=isIncomplete?'#e8e5e0':isWeEmpty?'#ece9e4':isBH?'#eef0f4':DESK_BG[lvl];
+        const tc=DESK_TXT[lvl];
+        cell.className=`desk-cell${isWe||isBH?' we-cell':''}${isIncomplete?' incomplete-cell':''}${isWeEmpty?' we-empty':''}${isBH?' bh-cell':''}`;
+        cell.style.background=bg;
+
+        if(isIncomplete){
+          cell.innerHTML=`<span class="dc-we" style="opacity:0.4">no data</span>`;
+        } else if(isWeEmpty){
+          cell.innerHTML=dateN?`<span class="dc-date" style="opacity:0.3">${dateN}</span>`:'';
+        } else {
+          const di18=deskIcon(count,22);
+          if(di18){
+            cell.innerHTML=`${di18}<span class="dc-count" style="color:${tc};font-size:0.65rem">${count}</span>${dateN?`<span class="dc-date">${isBH?'BH ':''} ${dateN}</span>`:''}`;
+          } else {
+            cell.innerHTML=`<span class="dc-count" style="color:${tc}">${count}</span>${dateN?`<span class="dc-date">${isBH?'BH ':''} ${dateN}</span>`:''}`;
+          }
+          // Tooltip
+          const dayLabel=isBH?`BH Mon ${dateN}`:isWe?`${day} ${dateN}`:`${day} ${dateN}`;
+          const hdrStr=`${w.label} · ${dayLabel}`;
+          cell.addEventListener('mouseenter',e=>showDeskTip(people,hdrStr,e));
+          cell.addEventListener('mouseleave',hideTip);
+        }
+
+        cell.style.gridColumn=String(2+di);
+        row.appendChild(cell);
+      });
+
+      cal.appendChild(row);
+    });
+
+    block.appendChild(cal);
+    container.appendChild(block);
+  });
+}
+
+function showDeskTip(people,hdr,e){
+  clearTimeout(ttTO);
+  let h=`<div class="tt-hdr">${hdr}</div>`;
+  if(!people||people.length===0){h+=`<div class="tt-empty">No tracked staff in office</div>`;}
+  else people.forEach(name=>{h+=`<div class="tt-row"><span class="tt-name">${name}</span></div>`;});
+  tip.innerHTML=h;posTip(e);tip.classList.add('vis');
+}
+
 function resetToUpload(){
   allMerged=[];
   document.getElementById('upload-section').style.display='block';
@@ -689,7 +969,7 @@ function handleFile(file){
   if(name.endsWith('.csv')){
     reader.onload=e=>{
       const rows=e.target.result.split('\n').map(l=>l.split(',').map(c=>c.trim()));
-      processSheets([{label:'Uploaded week',type:'weekday',data:parseWeekday(rows)}]);
+      processSheets([{label:'Uploaded week',type:'weekday',data:parseWeekday(rows),desk:parseDeskWeekday(rows)}]);
     };
     reader.readAsText(file);
   } else {
@@ -700,8 +980,13 @@ function handleFile(file){
         if(sn==='Done') return;
         const ws=wb.Sheets[sn];
         const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''}).map(r=>r.map(c=>String(c??'').trim()));
-        if(sn.startsWith('WE')) parsed.push({label:sn,type:'weekend',...parseWeekend(rows)});
-        else parsed.push({label:sn,type:'weekday',data:parseWeekday(rows)});
+        if(sn.startsWith('WE')){
+          const wd=parseWeekend(rows);
+          const desk=parseDeskWeekend(rows);
+          parsed.push({label:sn,type:'weekend',...wd,desk});
+        } else {
+          parsed.push({label:sn,type:'weekday',data:parseWeekday(rows),desk:parseDeskWeekday(rows)});
+        }
       });
       processSheets(parsed);
     };
