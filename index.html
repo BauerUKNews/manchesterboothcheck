@@ -579,6 +579,7 @@ function renderAll(){
     wtog.classList.add('ok');
   }
   renderGrid();
+  renderDeskGrid();
 }
 
 function parseDayHeader(s){
@@ -920,9 +921,9 @@ function renderDeskGrid(){
         } else if(isWeEmpty){
           cell.innerHTML=dateN?`<span class="dc-date" style="opacity:0.3">${dateN}</span>`:'';
         } else {
-          const di18=deskIcon(count,22);
-          if(di18){
-            cell.innerHTML=`${di18}<span class="dc-count" style="color:${tc};font-size:0.65rem">${count}</span>${dateN?`<span class="dc-date">${isBH?'BH ':''} ${dateN}</span>`:''}`;
+          const deskIco=deskIcon(count,22);
+          if(deskIco){
+            cell.innerHTML=`${deskIco}<span class="dc-count" style="color:${tc};font-size:0.65rem">${count}</span>${dateN?`<span class="dc-date">${isBH?'BH ':''} ${dateN}</span>`:''}`;
           } else {
             cell.innerHTML=`<span class="dc-count" style="color:${tc}">${count}</span>${dateN?`<span class="dc-date">${isBH?'BH ':''} ${dateN}</span>`:''}`;
           }
